@@ -107,6 +107,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import Navbar from "./components/Navbar";
 import { CartProvider } from "./context/CartContext";
 import { motion } from "framer-motion";
+import HeroFood from "./Gemini_Generated_Image_sqiaposqiaposqia.png";
 
 function GuestExperience() {
   const [searchParams] = useSearchParams();
@@ -159,7 +160,7 @@ function GuestExperience() {
             className="w-full flex justify-center"
           >
             <img
-              src="./Gemini_Generated_Image_sqiaposqiaposqia.png"
+              src={HeroFood}
               alt="Delicious Food"
               className="w-full max-w-sm rounded-2xl shadow-2xl object-cover"
             />
