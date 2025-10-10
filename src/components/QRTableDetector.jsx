@@ -1,36 +1,3 @@
-// import { useEffect, useState } from "react";
-// import { useSearchParams } from "react-router-dom";
-
-// export default function QRTableDetector({ tableId: providedTableId = null }) {
-//   const [searchParams] = useSearchParams();
-//   const [table, setTable] = useState(providedTableId);
-
-//   useEffect(() => {
-//     if (providedTableId) {
-//       setTable(providedTableId);
-//       return;
-//     }
-
-//     const param = searchParams.get("table");
-//     setTable(param);
-//   }, [providedTableId, searchParams]);
-
-//   const status = table ? `Table ${table}` : "No table detected";
-
-//   return (
-//     <div className="table-detector" role="status">
-//       <span className="table-detector__icon">🍽️</span>
-//       <div>
-//         <p className="table-detector__label">You're dining on</p>
-//         <p className={`table-detector__value ${table ? "active" : "missing"}`}>
-//           {status}
-//         </p>
-//         {!table && <small>Scan the QR code on your table to personalize the experience.</small>}
-//       </div>
-//     </div>
-//   );
-// }
-
 
 
 import { useEffect, useState } from "react";
