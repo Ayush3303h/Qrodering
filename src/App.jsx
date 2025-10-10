@@ -159,7 +159,7 @@ function GuestExperience() {
             className="w-full flex justify-center"
           >
             <img
-              src="src/Gemini_Generated_Image_sqiaposqiaposqia.png"
+              src="./Gemini_Generated_Image_sqiaposqiaposqia.png"
               alt="Delicious Food"
               className="w-full max-w-sm rounded-2xl shadow-2xl object-cover"
             />
