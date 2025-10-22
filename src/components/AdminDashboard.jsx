@@ -1,156 +1,60 @@
 
-// // src/components/AdminDashboard.jsx
-// import { useState } from "react";
-// import AdminLogin from "./AdminLogin";
-// import MenuManager from "./MenuManager";
-// import OrdersManager from "./OrdersManager";
-// import { signOut } from "firebase/auth";
-// import { auth } from "../firebase/firebaseConfig";
-
-// export default function AdminDashboard() {
-//   const [loggedIn, setLoggedIn] = useState(!!auth.currentUser);
-
-//   const handleLogout = async () => {
-//     await signOut(auth);
-//     setLoggedIn(false);
-//   };
-
-//   if (!loggedIn) return <AdminLogin onLogin={() => setLoggedIn(true)} />;
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 p-6 space-y-6">
-//       <header className="flex justify-between items-center">
-//         <h1 className="text-2xl font-bold">Admin Panel</h1>
-//         <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-//           Logout
-//         </button>
-//       </header>
-//       <MenuManager />
-//       <OrdersManager />
-//     </div>
-//   );
-// }
-
-
-// // src/components/AdminDashboard.jsx
-// import { useState } from "react";
-// import AdminLogin from "./AdminLogin";
-// import MenuManager from "./MenuManager";
-// import OrdersManager from "./OrdersManager";
-// import { signOut } from "firebase/auth";
-// import { auth } from "../firebase/firebaseConfig";
-
-// export default function AdminDashboard() {
-//   const [loggedIn, setLoggedIn] = useState(!!auth.currentUser);
-
-//   const handleLogout = async () => {
-//     await signOut(auth);
-//     setLoggedIn(false);
-//   };
-
-//   if (!loggedIn)
-//     return <AdminLogin onLogin={() => setLoggedIn(true)} />;
-
-//   return (
-//     <div className="min-h-screen bg-gray-100 p-6 space-y-6">
-//       {/* Header */}
-//       <header className="flex flex-col md:flex-row justify-between items-center bg-white rounded-xl shadow-lg p-4 md:p-6">
-//         <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
-//         <button
-//           onClick={handleLogout}
-//           className="mt-3 md:mt-0 bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-medium shadow transition transform hover:-translate-y-0.5"
-//         >
-//           Logout
-//         </button>
-//       </header>
-
-//       {/* Main Content */}
-//       <div className="grid md:grid-cols-2 gap-6">
-//         {/* Menu Manager */}
-//         <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
-//           <MenuManager />
-//         </div>
-
-//         {/* Orders Manager */}
-//         <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
-//           <OrdersManager />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-// // src/components/AdminDashboard.jsx
-// import { useState } from "react";
-// import AdminLogin from "./AdminLogin";
-// import MenuManager from "./MenuManager";
-// import OrdersManager from "./OrdersManager";
-// import { signOut } from "firebase/auth";
-// import { auth } from "../firebase/firebaseConfig";
-
-// export default function AdminDashboard() {
-//   const [loggedIn, setLoggedIn] = useState(!!auth.currentUser);
-
-//   const handleLogout = async () => {
-//     await signOut(auth);
-//     setLoggedIn(false);
-//   };
-
-//   if (!loggedIn) return <AdminLogin onLogin={() => setLoggedIn(true)} />;
-
-//   return (
-//     <div className="min-h-screen bg-gray-100 p-6">
-//       {/* Header */}
-//       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-//         <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-//         <button
-//           onClick={handleLogout}
-//           className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-md shadow-md hover:shadow-lg transition"
-//         >
-//           Logout
-//         </button>
-//       </header>
-
-//       {/* Dashboard Cards */}
-//       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-//         {/* Menu Manager Card */}
-//         <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition">
-//           <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-//             Menu Manager
-//           </h2>
-//           <MenuManager />
-//         </div>
-
-//         {/* Orders Manager Card */}
-//         <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition">
-//           <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-//             Orders Manager
-//           </h2>
-//           <OrdersManager />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
 // src/components/AdminDashboard.jsx
-// import { useState } from "react";
+// import { useState, useEffect, useRef } from "react";
 // import AdminLogin from "./AdminLogin";
 // import MenuManager from "./MenuManager";
 // import OrdersManager from "./OrdersManager";
+// import TableQRGenerator from "./TableQRGenerator";
 // import { signOut } from "firebase/auth";
 // import { auth } from "../firebase/firebaseConfig";
-// import { FiMenu, FiLogOut, FiClipboard, FiCoffee } from "react-icons/fi";
+// import {
+//   FiLogOut,
+//   FiMenu,
+//   FiClipboard,
+//   FiGrid,
+//   FiCoffee,
+// } from "react-icons/fi";
 
 // export default function AdminDashboard() {
 //   const [loggedIn, setLoggedIn] = useState(!!auth.currentUser);
-//   const [sidebarOpen, setSidebarOpen] = useState(true);
-//   const [activeTab, setActiveTab] = useState("orders"); // orders or menu
+//   const [sidebarOpen, setSidebarOpen] = useState(false);
+//   const [activeTab, setActiveTab] = useState("orders");
+//   const [hideSidebar, setHideSidebar] = useState(false);
+//   const lastScrollY = useRef(0);
+
+//   // Responsive auto-collapse
+//   useEffect(() => {
+//     const handleResize = () => {
+//       if (window.innerWidth >= 768) setSidebarOpen(true);
+//       else setSidebarOpen(false);
+//     };
+//     handleResize();
+//     window.addEventListener("resize", handleResize);
+//     return () => window.removeEventListener("resize", handleResize);
+//   }, []);
+
+//   // Disable body scroll when sidebar open (mobile)
+//   useEffect(() => {
+//     if (sidebarOpen && window.innerWidth < 768) {
+//       document.body.style.overflow = "hidden";
+//     } else {
+//       document.body.style.overflow = "auto";
+//     }
+//   }, [sidebarOpen]);
+
+//   // Auto-hide sidebar on scroll (mobile)
+//   useEffect(() => {
+//     const handleScroll = () => {
+//       const currentY = window.scrollY;
+//       if (window.innerWidth < 768) {
+//         if (currentY > lastScrollY.current + 10) setHideSidebar(true);
+//         else if (currentY < lastScrollY.current - 10) setHideSidebar(false);
+//         lastScrollY.current = currentY;
+//       }
+//     };
+//     window.addEventListener("scroll", handleScroll);
+//     return () => window.removeEventListener("scroll", handleScroll);
+//   }, []);
 
 //   const handleLogout = async () => {
 //     await signOut(auth);
@@ -159,71 +63,136 @@
 
 //   if (!loggedIn) return <AdminLogin onLogin={() => setLoggedIn(true)} />;
 
+//   const handleTabChange = (tab) => {
+//     setActiveTab(tab);
+//     if (window.innerWidth < 768) setSidebarOpen(false);
+//   };
+
 //   return (
-//     <div className="flex min-h-screen bg-gray-100">
-//       {/* Sidebar */}
+//     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+//       {/* 💫 Blur Overlay (mobile only) */}
+//       {sidebarOpen && window.innerWidth < 768 && (
+//         <div
+//           className="fixed inset-0 z-30 bg-black/30 backdrop-blur-md transition-opacity duration-300 animate-fadeIn"
+//           onClick={() => setSidebarOpen(false)}
+//         ></div>
+//       )}
+
+//       {/* Glass Sidebar */}
 //       <aside
-//         className={`bg-white shadow-lg transition-all duration-300 ${
-//           sidebarOpen ? "w-64" : "w-16"
-//         } flex flex-col`}
+//         className={`fixed md:relative z-40 flex flex-col h-full 
+//           backdrop-blur-xl bg-white/70 border-r border-white/30
+//           shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 ease-in-out
+//           ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0 md:w-20"}
+//           ${hideSidebar && window.innerWidth < 768 ? "-translate-y-full" : ""}
+//           ${sidebarOpen ? "animate-fadeSlideIn" : ""}
+//           rounded-r-3xl overflow-hidden`}
 //       >
-//         <div className="flex items-center justify-between p-4 border-b">
-//           {sidebarOpen && <h2 className="text-xl font-bold">Admin Panel</h2>}
+//         {/* Sidebar Header */}
+//         <div className="flex items-center justify-between p-4 border-b border-white/40">
+//           {sidebarOpen && (
+//             <h2 className="text-xl font-bold text-indigo-700 whitespace-nowrap drop-shadow-sm">
+//               Admin Panel
+//             </h2>
+//           )}
 //           <button
 //             onClick={() => setSidebarOpen((prev) => !prev)}
-//             className="text-gray-600 hover:text-gray-800 transition"
+//             className="text-gray-700 hover:text-indigo-600 transition"
+//             title="Toggle Sidebar"
 //           >
-//             <FiMenu size={20} />
+//             <FiMenu size={22} />
 //           </button>
 //         </div>
 
-//         <nav className="flex-1 mt-4 flex flex-col">
-//           <button
-//             onClick={() => setActiveTab("orders")}
-//             className={`flex items-center gap-3 p-4 hover:bg-gray-100 transition ${
-//               activeTab === "orders" ? "bg-indigo-100 font-semibold" : ""
-//             }`}
-//           >
-//             <FiClipboard size={18} />
-//             {sidebarOpen && "Orders"}
-//           </button>
-//           <button
-//             onClick={() => setActiveTab("menu")}
-//             className={`flex items-center gap-3 p-4 hover:bg-gray-100 transition ${
-//               activeTab === "menu" ? "bg-indigo-100 font-semibold" : ""
-//             }`}
-//           >
-//             <FiCoffee size={18} />
-//             {sidebarOpen && "Menu"}
-//           </button>
+//         {/* Navigation */}
+//         <nav className="flex-1 mt-4 flex flex-col space-y-1 px-2">
+//           {[
+//             { id: "orders", label: "Orders", icon: <FiClipboard size={18} /> },
+//             { id: "menu", label: "Menu", icon: <FiCoffee size={18} /> },
+//             {
+//               id: "tableqr",
+//               label: "Table QR Generator",
+//               icon: <FiGrid size={18} />,
+//             },
+//           ].map((item) => (
+//             <button
+//               key={item.id}
+//               onClick={() => handleTabChange(item.id)}
+//               className={`flex items-center gap-3 p-4 rounded-xl relative overflow-hidden group transition-all duration-300
+//                 ${
+//                   activeTab === item.id
+//                     ? "bg-white/60 text-indigo-700 font-semibold animate-glowBorder"
+//                     : "text-gray-700 hover:bg-white/40"
+//                 }`}
+//             >
+//               {item.icon}
+//               {(sidebarOpen || window.innerWidth >= 768) && item.label}
+
+//               {/* Glowing border animation (active tab only) */}
+//               {activeTab === item.id && (
+//                 <span className="absolute inset-0 rounded-xl border-2 border-transparent bg-gradient-to-r from-purple-400 via-indigo-400 to-blue-400 opacity-60 blur-[2px] animate-glow"></span>
+//               )}
+//             </button>
+//           ))}
 //         </nav>
 
+//         {/* Logout */}
 //         <button
 //           onClick={handleLogout}
-//           className="flex items-center gap-2 p-4 mt-auto mb-4 text-red-600 hover:bg-red-50 transition rounded"
+//           className="flex items-center gap-3 p-4 mt-auto mb-4 text-red-600 hover:bg-white/40 rounded-xl transition"
 //         >
 //           <FiLogOut size={18} />
-//           {sidebarOpen && "Logout"}
+//           {(sidebarOpen || window.innerWidth >= 768) && "Logout"}
 //         </button>
 //       </aside>
 
 //       {/* Main Content */}
-//       <main className="flex-1 p-6 space-y-6 overflow-auto">
+//       <main
+//         className={`flex-1 p-4 sm:p-6 space-y-6 overflow-auto transition-all duration-300 ${
+//           sidebarOpen && window.innerWidth >= 768 ? "md:ml-64" : "md:ml-20"
+//         }`}
+//       >
+//         {/* Glassy Mobile Header */}
+//         <div
+//           className="flex justify-between items-center md:hidden mb-4 sticky top-0 z-20
+//           backdrop-blur-xl bg-white/70 border border-white/30
+//           shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-2xl px-4 py-3
+//           animate-fadeSlideIn"
+//         >
+//           <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+//           <button
+//             onClick={() => setSidebarOpen(true)}
+//             className="text-gray-700 hover:text-indigo-600 transition"
+//           >
+//             <FiMenu size={22} />
+//           </button>
+//         </div>
+
+//         {/* Active Tab Content */}
 //         {activeTab === "orders" && (
-//           <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
-//             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-//               Orders Dashboard
+//           <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6 space-y-6 animate-fadeSlideIn border border-white/50">
+//             <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+//               <FiClipboard /> Orders Dashboard
 //             </h2>
 //             <OrdersManager />
 //           </div>
 //         )}
 
 //         {activeTab === "menu" && (
-//           <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
-//             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-//               Menu Management
+//           <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6 space-y-6 animate-fadeSlideIn border border-white/50">
+//             <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+//               <FiCoffee /> Menu Management
 //             </h2>
 //             <MenuManager />
+//           </div>
+//         )}
+
+//         {activeTab === "tableqr" && (
+//           <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6 space-y-6 animate-fadeSlideIn border border-white/50">
+//             <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+//               <FiGrid /> Table QR Generator
+//             </h2>
+//             <TableQRGenerator />
 //           </div>
 //         )}
 //       </main>
@@ -231,85 +200,244 @@
 //   );
 // }
 
+/* ✨ Add these to your global CSS (index.css or App.css)
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  0% { opacity: 0.6; filter: blur(2px); }
+  50% { opacity: 1; filter: blur(3px); }
+  100% { opacity: 0.6; filter: blur(2px); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-fadeSlideIn {
+  animation: fadeSlideIn 0.3s ease-out;
+}
+
+.animate-glow {
+  animation: glow 2s infinite ease-in-out;
+}
+*/
 
 
-// src/components/AdminDashboard.jsx
-import { useState } from "react";
+
+
+import { useState, useEffect, useRef } from "react";
 import AdminLogin from "./AdminLogin";
 import MenuManager from "./MenuManager";
 import OrdersManager from "./OrdersManager";
-import { signOut } from "firebase/auth";
+import TableQRGenerator from "./TableQRGenerator";
+import { signOut, onAuthStateChanged } from "firebase/auth"; // ✅ added here
 import { auth } from "../firebase/firebaseConfig";
-import { FiLogOut, FiMenu, FiClipboard, FiCoffee } from "react-icons/fi";
+import {
+  FiLogOut,
+  FiMenu,
+  FiClipboard,
+  FiGrid,
+  FiCoffee,
+} from "react-icons/fi";
 
 export default function AdminDashboard() {
-  const [loggedIn, setLoggedIn] = useState(!!auth.currentUser);
-  const [activeTab, setActiveTab] = useState("orders"); // orders or menu
+  const [loggedIn, setLoggedIn] = useState(null); // ✅ start as null (loading)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("orders");
+  const [hideSidebar, setHideSidebar] = useState(false);
+  const lastScrollY = useRef(0);
+
+  // ✅ Persist login session
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) setLoggedIn(true);
+      else setLoggedIn(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Responsive auto-collapse
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setSidebarOpen(true);
+      else setSidebarOpen(false);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Disable body scroll when sidebar open (mobile)
+  useEffect(() => {
+    if (sidebarOpen && window.innerWidth < 768) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [sidebarOpen]);
+
+  // Auto-hide sidebar on scroll (mobile)
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (window.innerWidth < 768) {
+        if (currentY > lastScrollY.current + 10) setHideSidebar(true);
+        else if (currentY < lastScrollY.current - 10) setHideSidebar(false);
+        lastScrollY.current = currentY;
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = async () => {
     await signOut(auth);
     setLoggedIn(false);
   };
 
+  // ✅ Wait for Firebase to load user before showing login/dashboard
+  if (loggedIn === null) return null;
   if (!loggedIn) return <AdminLogin onLogin={() => setLoggedIn(true)} />;
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (window.innerWidth < 768) setSidebarOpen(false);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      {/* Header */}
-      <header className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
+    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+      {sidebarOpen && window.innerWidth < 768 && (
+        <div
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-md transition-opacity duration-300 animate-fadeIn"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+
+      <aside
+        className={`fixed md:relative z-40 flex flex-col h-full 
+          backdrop-blur-xl bg-white/70 border-r border-white/30
+          shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0 md:w-20"}
+          ${hideSidebar && window.innerWidth < 768 ? "-translate-y-full" : ""}
+          ${sidebarOpen ? "animate-fadeSlideIn" : ""}
+          rounded-r-3xl overflow-hidden`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-white/40">
+          {sidebarOpen && (
+            <h2 className="text-xl font-bold text-indigo-700 whitespace-nowrap drop-shadow-sm">
+              Admin Panel
+            </h2>
+          )}
+          <button
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            className="text-gray-700 hover:text-indigo-600 transition"
+            title="Toggle Sidebar"
+          >
+            <FiMenu size={22} />
+          </button>
+        </div>
+
+        <nav className="flex-1 mt-4 flex flex-col space-y-1 px-2">
+          {[
+            { id: "orders", label: "Orders", icon: <FiClipboard size={18} /> },
+            { id: "menu", label: "Menu", icon: <FiCoffee size={18} /> },
+            {
+              id: "tableqr",
+              label: "Table QR Generator",
+              icon: <FiGrid size={18} />,
+            },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleTabChange(item.id)}
+              className={`flex items-center gap-3 p-4 rounded-xl relative overflow-hidden group transition-all duration-300
+                ${
+                  activeTab === item.id
+                    ? "bg-white/60 text-indigo-700 font-semibold animate-glowBorder"
+                    : "text-gray-700 hover:bg-white/40"
+                }`}
+            >
+              {item.icon}
+              {(sidebarOpen || window.innerWidth >= 768) && item.label}
+
+              {activeTab === item.id && (
+                <span className="absolute inset-0 rounded-xl border-2 border-transparent bg-gradient-to-r from-purple-400 via-indigo-400 to-blue-400 opacity-60 blur-[2px] animate-glow"></span>
+              )}
+            </button>
+          ))}
+        </nav>
+
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md transition"
+          className="flex items-center gap-3 p-4 mt-auto mb-4 text-red-600 hover:bg-white/40 rounded-xl transition"
         >
-          <FiLogOut className="w-5 h-5" /> Logout
+          <FiLogOut size={18} />
+          {(sidebarOpen || window.innerWidth >= 768) && "Logout"}
         </button>
-      </header>
+      </aside>
 
-      {/* Tabs */}
-      <div className="flex gap-4 mb-6">
-        <button
-          onClick={() => setActiveTab("orders")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-            activeTab === "orders"
-              ? "bg-indigo-600 text-white shadow-lg"
-              : "bg-white text-gray-700 hover:bg-gray-200 shadow-md"
-          }`}
+      <main
+        className={`flex-1 p-4 sm:p-6 space-y-6 overflow-auto transition-all duration-300 ${
+          sidebarOpen && window.innerWidth >= 768 ? "md:ml-64" : "md:ml-20"
+        }`}
+      >
+        <div
+          className="flex justify-between items-center md:hidden mb-4 sticky top-0 z-20
+          backdrop-blur-xl bg-white/70 border border-white/30
+          shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-2xl px-4 py-3
+          animate-fadeSlideIn"
         >
-          <FiClipboard className="w-5 h-5" /> Orders
-        </button>
-        <button
-          onClick={() => setActiveTab("menu")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-            activeTab === "menu"
-              ? "bg-indigo-600 text-white shadow-lg"
-              : "bg-white text-gray-700 hover:bg-gray-200 shadow-md"
-          }`}
-        >
-          <FiMenu className="w-5 h-5" /> Menu
-        </button>
-      </div>
+          <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-gray-700 hover:text-indigo-600 transition"
+          >
+            <FiMenu size={22} />
+          </button>
+        </div>
 
-      {/* Content */}
-      <div className="space-y-6">
         {activeTab === "orders" && (
-          <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl">
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <FiClipboard /> Orders Management
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6 space-y-6 animate-fadeSlideIn border border-white/50">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <FiClipboard /> Orders Dashboard
             </h2>
             <OrdersManager />
           </div>
         )}
 
         {activeTab === "menu" && (
-          <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl">
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <FiMenu /> Menu Management
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6 space-y-6 animate-fadeSlideIn border border-white/50">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <FiCoffee /> Menu Management
             </h2>
             <MenuManager />
           </div>
         )}
-      </div>
+
+        {activeTab === "tableqr" && (
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6 space-y-6 animate-fadeSlideIn border border-white/50">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <FiGrid /> Table QR Generator
+            </h2>
+            <TableQRGenerator />
+          </div>
+        )}
+      </main>
     </div>
   );
 }
