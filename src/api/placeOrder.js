@@ -1,8 +1,30 @@
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
+// import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+// import { db } from "../firebase";
 
-export async function placeOrder(tableNumber, items) {
-  const orderCol = collection(db, "orders");
+// export async function placeOrder(tableNumber, items) {
+//   const orderCol = collection(db, "orders");
+//   const orderData = {
+//     tableNumber,
+//     items,
+//     status: "pending",
+//     createdAt: serverTimestamp()
+//   };
+//   const docRef = await addDoc(orderCol, orderData);
+//   console.log("Order placed with ID:", docRef.id);
+// }
+
+
+// src/helpers/placeOrder.js
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase/firebaseConfig";
+
+/**
+ * placeOrder(restaurantSlug, tableNumber, items)
+ * returns created orderId
+ */
+export async function placeOrder(restaurantSlug = "default", tableNumber, items) {
+  if (!restaurantSlug) throw new Error("restaurantSlug required");
+  const orderCol = collection(db, "restaurants", restaurantSlug, "orders");
   const orderData = {
     tableNumber,
     items,
@@ -10,5 +32,5 @@ export async function placeOrder(tableNumber, items) {
     createdAt: serverTimestamp()
   };
   const docRef = await addDoc(orderCol, orderData);
-  console.log("Order placed with ID:", docRef.id);
+  return docRef.id;
 }

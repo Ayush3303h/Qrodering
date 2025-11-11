@@ -1,58 +1,395 @@
 
 
+// // src/components/AdminDashboard.jsx
+// import { useState, useEffect, useRef } from "react";
+// import AdminLogin from "./AdminLogin";
+// import MenuManager from "./MenuManager";
+// import OrdersManager from "./OrdersManager";
+// import TableQRGenerator from "./TableQRGenerator";
+// import { signOut, onAuthStateChanged } from "firebase/auth";
+// import { auth, db } from "../firebase/firebaseConfig";
+// import { FiLogOut, FiMenu, FiClipboard, FiGrid, FiCoffee } from "react-icons/fi";
+// import { useParams } from "react-router-dom";
+// import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 
+// // DEBUG imports for modular SDK diagnostics (temporary)
+// import { getApps, getApp } from "firebase/app";
+// import { getAuth } from "firebase/auth";
+// import { getFirestore as getFirestoreMod, doc as docMod, getDoc as getDocMod } from "firebase/firestore";
+
+// export default function AdminDashboard() {
+//   const [loggedIn, setLoggedIn] = useState(null);
+//   const [isAdmin, setIsAdmin] = useState(false);
+//   const [sidebarOpen, setSidebarOpen] = useState(false);
+//   const [activeTab, setActiveTab] = useState("orders");
+//   const [hideSidebar, setHideSidebar] = useState(false);
+//   const lastScrollY = useRef(0);
+//   const { restaurantSlug } = useParams();
+
+//   // -------------------------
+//   // Temporary DEBUG effect ---
+//   // Logs app config, auth user and attempts to read restaurants/streake
+//   // Remove this effect after debugging is complete.
+//   useEffect(() => {
+//     (async () => {
+//       try {
+//         console.log("🧪 DEBUG: starting admin dashboard diagnostics...");
+
+//         // 1) modular getApps/getApp info
+//         const apps = getApps();
+//         console.log("🧪 DEBUG: getApps().length =", apps.length);
+//         const app = apps.length ? getApp() : null;
+//         console.log("🧪 DEBUG: getApp().options =", app ? app.options : null);
+
+//         // 2) modular auth
+//         const authMod = getAuth();
+//         console.log("🧪 DEBUG: getAuth().currentUser (immediate) ->", authMod.currentUser && { email: authMod.currentUser.email, uid: authMod.currentUser.uid });
+
+//         // wait a short time for auth to initialize (if it's async)
+//         await new Promise((r) => setTimeout(r, 1200));
+//         console.log("🧪 DEBUG: getAuth().currentUser (after delay) ->", getAuth().currentUser && { email: getAuth().currentUser.email, uid: getAuth().currentUser.uid });
+
+//         // 3) attempt to read restaurants/streake using modular Firestore
+//         try {
+//           const dbMod = getFirestoreMod();
+//           const rdoc = docMod(dbMod, "restaurants", restaurantSlug || "streake");
+//           const snap = await getDocMod(rdoc);
+//           if (snap.exists()) {
+//             console.log("🧪 DEBUG: restaurants/" + (restaurantSlug || "streake") + " read OK:", snap.data());
+//           } else {
+//             console.log("🧪 DEBUG: restaurants/" + (restaurantSlug || "streake") + " does not exist");
+//           }
+//         } catch (readErr) {
+//           console.error("🧪 DEBUG: read restaurants/streake error:", readErr && readErr.code, readErr && readErr.message, readErr);
+//         }
+
+//         console.log("🧪 DEBUG: location.pathname:", window.location.pathname);
+//       } catch (err) {
+//         console.error("🧪 DEBUG: unexpected diagnostics error:", err);
+//       }
+//     })();
+//   }, [restaurantSlug]);
+//   // -------------------------
+
+//   // Wait for Firebase auth to load user and verify admin
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+//       if (user) {
+//         setLoggedIn(true);
+//         await verifyAdmin(user);
+//       } else {
+//         setLoggedIn(false);
+//         setIsAdmin(false);
+//       }
+//     });
+//     return () => unsubscribe();
+//   }, [restaurantSlug]);
+
+//   // Verify admin access from restaurants + fallback to users collection
+//   const verifyAdmin = async (user) => {
+//     if (!restaurantSlug || !user) {
+//       setIsAdmin(false);
+//       return;
+//     }
+
+//     try {
+//       const restRef = doc(db, "restaurants", restaurantSlug);
+//       const restSnap = await getDoc(restRef);
+
+//       const adminsRaw = restSnap.exists() ? restSnap.data().adminEmails || [] : [];
+//       const admins = Array.isArray(adminsRaw)
+//         ? adminsRaw.map((e) => (typeof e === "string" ? e.trim().toLowerCase() : e))
+//         : [];
+
+//       const userEmail = (user.email || "").trim().toLowerCase();
+//       console.log("🔍 Checking admin for:", restaurantSlug, "User:", userEmail, "Admins:", admins);
+
+//       if (admins.includes(userEmail)) {
+//         setIsAdmin(true);
+//         return;
+//       }
+
+//       // fallback check: users collection (by uid)
+//       const q = query(collection(db, "users"), where("uid", "==", user.uid));
+//       const snap = await getDocs(q);
+//       if (!snap.empty) {
+//         for (const d of snap.docs) {
+//           const data = d.data();
+//           if (
+//             (data.role === "admin" && data.restaurantSlug === restaurantSlug) ||
+//             ((data.email || "").trim().toLowerCase() === userEmail && data.restaurantSlug === restaurantSlug)
+//           ) {
+//             setIsAdmin(true);
+//             return;
+//           }
+//         }
+//       }
+
+//       setIsAdmin(false);
+//     } catch (err) {
+//       // Detailed error logging to help debug permission issues
+//       console.error("❌ Admin verification failed:", err && err.code, err && err.message, err);
+//       setIsAdmin(false);
+//     }
+//   };
+
+//   // Responsive sidebar
+//   useEffect(() => {
+//     const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
+//     handleResize();
+//     window.addEventListener("resize", handleResize);
+//     return () => window.removeEventListener("resize", handleResize);
+//   }, []);
+
+//   // Disable scroll when sidebar open (mobile)
+//   useEffect(() => {
+//     document.body.style.overflow = sidebarOpen && window.innerWidth < 768 ? "hidden" : "auto";
+//   }, [sidebarOpen]);
+
+//   // Auto-hide sidebar on scroll (mobile)
+//   useEffect(() => {
+//     const handleScroll = () => {
+//       const currentY = window.scrollY;
+//       if (window.innerWidth < 768) {
+//         if (currentY > lastScrollY.current + 10) setHideSidebar(true);
+//         else if (currentY < lastScrollY.current - 10) setHideSidebar(false);
+//         lastScrollY.current = currentY;
+//       }
+//     };
+//     window.addEventListener("scroll", handleScroll);
+//     return () => window.removeEventListener("scroll", handleScroll);
+//   }, []);
+
+//   const handleLogout = async () => {
+//     await signOut(auth);
+//     setLoggedIn(false);
+//     setIsAdmin(false);
+//   };
+
+//   if (loggedIn === null) return null;
+//   if (!loggedIn) return <AdminLogin onLogin={() => setLoggedIn(true)} />;
+//   if (!isAdmin) {
+//     return (
+//       <div className="p-6 text-center text-red-600 font-semibold">
+//         You are not an admin for <strong>{restaurantSlug}</strong>.
+//       </div>
+//     );
+//   }
+
+//   const handleTabChange = (tab) => {
+//     setActiveTab(tab);
+//     if (window.innerWidth < 768) setSidebarOpen(false);
+//   };
+
+//   return (
+//     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+//       {sidebarOpen && window.innerWidth < 768 && (
+//         <div
+//           className="fixed inset-0 z-30 bg-black/30 backdrop-blur-md"
+//           onClick={() => setSidebarOpen(false)}
+//         />
+//       )}
+
+//       <aside
+//         className={`fixed md:relative z-40 flex flex-col h-full backdrop-blur-xl bg-white/70 border-r border-white/30 shadow transition-all 
+//           ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0 md:w-20"} 
+//           ${hideSidebar && window.innerWidth < 768 ? "-translate-y-full" : ""} 
+//           rounded-r-3xl overflow-hidden`}
+//       >
+//         <div className="flex items-center justify-between p-4 border-b border-white/40">
+//           {sidebarOpen && <h2 className="text-xl font-bold text-indigo-700">Admin Panel</h2>}
+//           <button
+//             onClick={() => setSidebarOpen((p) => !p)}
+//             className="text-gray-700 hover:text-indigo-600"
+//           >
+//             <FiMenu size={22} />
+//           </button>
+//         </div>
+
+//         <nav className="flex-1 mt-4 flex flex-col space-y-1 px-2">
+//           {[
+//             { id: "orders", label: "Orders", icon: <FiClipboard size={18} /> },
+//             { id: "menu", label: "Menu", icon: <FiCoffee size={18} /> },
+//             { id: "tableqr", label: "Table QR Generator", icon: <FiGrid size={18} /> },
+//           ].map((item) => (
+//             <button
+//               key={item.id}
+//               onClick={() => handleTabChange(item.id)}
+//               className={`flex items-center gap-3 p-4 rounded-xl 
+//                 ${
+//                   activeTab === item.id
+//                     ? "bg-white/60 text-indigo-700 font-semibold"
+//                     : "text-gray-700 hover:bg-white/40"
+//                 }`}
+//             >
+//               {item.icon}
+//               {(sidebarOpen || window.innerWidth >= 768) && item.label}
+//             </button>
+//           ))}
+//         </nav>
+
+//         <button
+//           onClick={handleLogout}
+//           className="flex items-center gap-3 p-4 mt-auto mb-4 text-red-600 hover:bg-white/40 rounded-xl"
+//         >
+//           <FiLogOut size={18} />
+//           {(sidebarOpen || window.innerWidth >= 768) && "Logout"}
+//         </button>
+//       </aside>
+
+//       <main
+//         className={`flex-1 p-4 sm:p-6 space-y-6 overflow-auto ${
+//           sidebarOpen && window.innerWidth >= 768 ? "md:ml-64" : "md:ml-20"
+//         }`}
+//       >
+//         <div className="md:hidden mb-4 sticky top-0 z-20 backdrop-blur-xl bg-white/70 border border-white/30 rounded-2xl px-4 py-3">
+//           <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+//           <button onClick={() => setSidebarOpen(true)} className="text-gray-700 mt-2">
+//             <FiMenu size={22} />
+//           </button>
+//         </div>
+
+//         {activeTab === "orders" && (
+//           <div className="bg-white/90 rounded-2xl shadow-lg p-4 sm:p-6 space-y-6">
+//             <h2 className="text-2xl font-bold text-gray-800 mb-4">
+//               <FiClipboard /> Orders Dashboard
+//             </h2>
+//             <OrdersManager restaurantSlug={restaurantSlug} />
+//           </div>
+//         )}
+
+//         {activeTab === "menu" && (
+//           <div className="bg-white/90 rounded-2xl shadow-lg p-4 sm:p-6 space-y-6">
+//             <h2 className="text-2xl font-bold text-gray-800 mb-4">
+//               <FiCoffee /> Menu Management
+//             </h2>
+//             <MenuManager restaurantSlug={restaurantSlug} />
+//           </div>
+//         )}
+
+//         {activeTab === "tableqr" && (
+//           <div className="bg-white/90 rounded-2xl shadow-lg p-4 sm:p-6 space-y-6">
+//             <h2 className="text-2xl font-bold text-gray-800 mb-4">
+//               <FiGrid /> Table QR Generator
+//             </h2>
+//             <TableQRGenerator baseSlug={restaurantSlug} />
+//           </div>
+//         )}
+//       </main>
+//     </div>
+//   );
+// }
+
+
+
+
+
+// src/components/AdminDashboard.jsx
 import { useState, useEffect, useRef } from "react";
 import AdminLogin from "./AdminLogin";
 import MenuManager from "./MenuManager";
 import OrdersManager from "./OrdersManager";
 import TableQRGenerator from "./TableQRGenerator";
-import { signOut, onAuthStateChanged } from "firebase/auth"; // ✅ added here
-import { auth } from "../firebase/firebaseConfig";
-import {
-  FiLogOut,
-  FiMenu,
-  FiClipboard,
-  FiGrid,
-  FiCoffee,
-} from "react-icons/fi";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "../firebase/firebaseConfig";
+import { FiLogOut, FiMenu, FiClipboard, FiGrid, FiCoffee } from "react-icons/fi";
+import { useParams } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function AdminDashboard() {
-  const [loggedIn, setLoggedIn] = useState(null); // ✅ start as null (loading)
+  const [loggedIn, setLoggedIn] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("orders");
   const [hideSidebar, setHideSidebar] = useState(false);
   const lastScrollY = useRef(0);
+  const { restaurantSlug } = useParams();
 
-  // ✅ Persist login session
+  // 🔹 Watch for login/logout
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) setLoggedIn(true);
-      else setLoggedIn(false);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setLoggedIn(true);
+        await verifyAdmin(user);
+      } else {
+        setLoggedIn(false);
+        setIsAdmin(false);
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [restaurantSlug]);
 
-  // Responsive auto-collapse
+  // 🔹 Improved admin verification (safe, no permission errors)
+  const verifyAdmin = async (user) => {
+    if (!restaurantSlug || !user) {
+      setIsAdmin(false);
+      return;
+    }
+
+    try {
+      const restRef = doc(db, "restaurants", restaurantSlug);
+      const restSnap = await getDoc(restRef);
+
+      if (!restSnap.exists()) {
+        console.warn(`⚠️ Restaurant "${restaurantSlug}" not found in Firestore.`);
+        setIsAdmin(false);
+        return;
+      }
+
+      const adminsRaw = restSnap.data().adminEmails || [];
+      const admins = Array.isArray(adminsRaw)
+        ? adminsRaw.map((e) => (typeof e === "string" ? e.trim().toLowerCase() : ""))
+        : [];
+
+      const userEmail = (user.email || "").trim().toLowerCase();
+
+      console.log("🔍 Checking admin for:", restaurantSlug, "User:", userEmail, "Admins:", admins);
+
+      // ✅ direct match
+      if (admins.includes(userEmail)) {
+        setIsAdmin(true);
+        return;
+      }
+
+      // ✅ fallback single doc read (not query)
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const u = userDocSnap.data();
+          const uEmail = (u.email || "").trim().toLowerCase();
+          if (
+            (u.role === "admin" && u.restaurantSlug === restaurantSlug) ||
+            (uEmail === userEmail && u.restaurantSlug === restaurantSlug)
+          ) {
+            setIsAdmin(true);
+            return;
+          }
+        }
+      } catch (userReadErr) {
+        console.error("⚠️ verifyAdmin fallback read failed:", userReadErr.code, userReadErr.message);
+      }
+
+      setIsAdmin(false);
+    } catch (err) {
+      console.error("❌ Admin verification failed:", err.code, err.message);
+      setIsAdmin(false);
+    }
+  };
+
+  // 🔹 Responsive sidebar logic
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) setSidebarOpen(true);
-      else setSidebarOpen(false);
-    };
+    const handleResize = () => setSidebarOpen(window.innerWidth >= 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Disable body scroll when sidebar open (mobile)
   useEffect(() => {
-    if (sidebarOpen && window.innerWidth < 768) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
+    document.body.style.overflow =
+      sidebarOpen && window.innerWidth < 768 ? "hidden" : "auto";
   }, [sidebarOpen]);
 
-  // Auto-hide sidebar on scroll (mobile)
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
@@ -69,11 +406,18 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     await signOut(auth);
     setLoggedIn(false);
+    setIsAdmin(false);
   };
 
-  // ✅ Wait for Firebase to load user before showing login/dashboard
+  // 🔹 Render states
   if (loggedIn === null) return null;
   if (!loggedIn) return <AdminLogin onLogin={() => setLoggedIn(true)} />;
+  if (!isAdmin)
+    return (
+      <div className="p-6 text-center text-red-600 font-semibold">
+        You are not an admin for <strong>{restaurantSlug}</strong>.
+      </div>
+    );
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -84,30 +428,22 @@ export default function AdminDashboard() {
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
       {sidebarOpen && window.innerWidth < 768 && (
         <div
-          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-md transition-opacity duration-300 animate-fadeIn"
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-md"
           onClick={() => setSidebarOpen(false)}
-        ></div>
+        />
       )}
 
       <aside
-        className={`fixed md:relative z-40 flex flex-col h-full 
-          backdrop-blur-xl bg-white/70 border-r border-white/30
-          shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0 md:w-20"}
-          ${hideSidebar && window.innerWidth < 768 ? "-translate-y-full" : ""}
-          ${sidebarOpen ? "animate-fadeSlideIn" : ""}
-          rounded-r-3xl overflow-hidden`}
+        className={`fixed md:relative z-40 flex flex-col h-full backdrop-blur-xl bg-white/70 border-r border-white/30 shadow transition-all 
+        ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0 md:w-20"} 
+        ${hideSidebar && window.innerWidth < 768 ? "-translate-y-full" : ""} 
+        rounded-r-3xl overflow-hidden`}
       >
         <div className="flex items-center justify-between p-4 border-b border-white/40">
-          {sidebarOpen && (
-            <h2 className="text-xl font-bold text-indigo-700 whitespace-nowrap drop-shadow-sm">
-              Admin Panel
-            </h2>
-          )}
+          {sidebarOpen && <h2 className="text-xl font-bold text-indigo-700">Admin Panel</h2>}
           <button
-            onClick={() => setSidebarOpen((prev) => !prev)}
-            className="text-gray-700 hover:text-indigo-600 transition"
-            title="Toggle Sidebar"
+            onClick={() => setSidebarOpen((p) => !p)}
+            className="text-gray-700 hover:text-indigo-600"
           >
             <FiMenu size={22} />
           </button>
@@ -117,35 +453,27 @@ export default function AdminDashboard() {
           {[
             { id: "orders", label: "Orders", icon: <FiClipboard size={18} /> },
             { id: "menu", label: "Menu", icon: <FiCoffee size={18} /> },
-            {
-              id: "tableqr",
-              label: "Table QR Generator",
-              icon: <FiGrid size={18} />,
-            },
+            { id: "tableqr", label: "Table QR Generator", icon: <FiGrid size={18} /> },
           ].map((item) => (
             <button
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className={`flex items-center gap-3 p-4 rounded-xl relative overflow-hidden group transition-all duration-300
-                ${
-                  activeTab === item.id
-                    ? "bg-white/60 text-indigo-700 font-semibold animate-glowBorder"
-                    : "text-gray-700 hover:bg-white/40"
-                }`}
+              className={`flex items-center gap-3 p-4 rounded-xl 
+              ${
+                activeTab === item.id
+                  ? "bg-white/60 text-indigo-700 font-semibold"
+                  : "text-gray-700 hover:bg-white/40"
+              }`}
             >
               {item.icon}
               {(sidebarOpen || window.innerWidth >= 768) && item.label}
-
-              {activeTab === item.id && (
-                <span className="absolute inset-0 rounded-xl border-2 border-transparent bg-gradient-to-r from-purple-400 via-indigo-400 to-blue-400 opacity-60 blur-[2px] animate-glow"></span>
-              )}
             </button>
           ))}
         </nav>
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 p-4 mt-auto mb-4 text-red-600 hover:bg-white/40 rounded-xl transition"
+          className="flex items-center gap-3 p-4 mt-auto mb-4 text-red-600 hover:bg-white/40 rounded-xl"
         >
           <FiLogOut size={18} />
           {(sidebarOpen || window.innerWidth >= 768) && "Logout"}
@@ -153,49 +481,41 @@ export default function AdminDashboard() {
       </aside>
 
       <main
-        className={`flex-1 p-4 sm:p-6 space-y-6 overflow-auto transition-all duration-300 ${
+        className={`flex-1 p-4 sm:p-6 space-y-6 overflow-auto ${
           sidebarOpen && window.innerWidth >= 768 ? "md:ml-64" : "md:ml-20"
         }`}
       >
-        <div
-          className="flex justify-between items-center md:hidden mb-4 sticky top-0 z-20
-          backdrop-blur-xl bg-white/70 border border-white/30
-          shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-2xl px-4 py-3
-          animate-fadeSlideIn"
-        >
+        <div className="md:hidden mb-4 sticky top-0 z-20 backdrop-blur-xl bg-white/70 border border-white/30 rounded-2xl px-4 py-3">
           <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-gray-700 hover:text-indigo-600 transition"
-          >
+          <button onClick={() => setSidebarOpen(true)} className="text-gray-700 mt-2">
             <FiMenu size={22} />
           </button>
         </div>
 
         {activeTab === "orders" && (
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6 space-y-6 animate-fadeSlideIn border border-white/50">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-white/90 rounded-2xl shadow-lg p-4 sm:p-6 space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
               <FiClipboard /> Orders Dashboard
             </h2>
-            <OrdersManager />
+            <OrdersManager restaurantSlug={restaurantSlug} />
           </div>
         )}
 
         {activeTab === "menu" && (
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6 space-y-6 animate-fadeSlideIn border border-white/50">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-white/90 rounded-2xl shadow-lg p-4 sm:p-6 space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
               <FiCoffee /> Menu Management
             </h2>
-            <MenuManager />
+            <MenuManager restaurantSlug={restaurantSlug} />
           </div>
         )}
 
         {activeTab === "tableqr" && (
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-6 space-y-6 animate-fadeSlideIn border border-white/50">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-white/90 rounded-2xl shadow-lg p-4 sm:p-6 space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
               <FiGrid /> Table QR Generator
             </h2>
-            <TableQRGenerator />
+            <TableQRGenerator baseSlug={restaurantSlug} />
           </div>
         )}
       </main>
