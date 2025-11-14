@@ -1,0 +1,221 @@
+/* src/styles/theme-overrides.css
+   Tailwind-friendly (no @apply) dark/gold theme overrides that compile with Vite.
+   Palette:
+     gold: #B58C47
+     gold-600: #8F6D37
+     panel: #0b0605
+     deep: #100707
+     text: #f8f5f1
+*/
+
+/* Keep Tailwind base/components/utilities so the rest of your project still works */
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+/* Theme variables */
+/* :root{
+  --gold: #B58C47;
+  --gold-600: #8F6D37;
+  --panel: #0b0605;
+  --deep: #100707;
+  --text: #f8f5f1;
+  --muted: rgba(181,140,71,0.7);
+  --border: rgba(181,140,71,0.18);
+} */
+
+/* ---------- Base page ---------- */
+/* html, body, #root {
+  background-color: var(--panel);
+  color: var(--text);
+  background-image:
+    radial-gradient(1000px 400px at 50% 5%, rgba(181,140,71,0.03), transparent 8%),
+    linear-gradient(180deg, var(--deep) 0%, rgba(11,6,5,0.92) 60%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Brand / link accent */
+/* a, .brand, .header-logo, [class*="text-indigo-"] {
+  color: var(--gold);
+} */ 
+
+/* Headings default */
+/* h1, h2, h3, .title, .heading {
+  color: var(--text);
+} */
+
+/* ---------- Hero / jumbotron (gold stroke) ---------- */
+/* .hero, .hero-section, [class*="hero"], .jumbotron, .hero-card {
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  padding: 24px;
+  background-color: rgba(11,6,5,0.90);
+  box-shadow: 0 14px 50px rgba(0,0,0,0.65), 0 0 20px rgba(181,140,71,0.06);
+  color: var(--text);
+} */
+
+/* Smart dining badge */
+/* .smart-badge, [class*="SMART"], [class*="smart"], [class*="Dining"], [class*="dining"] {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid var(--gold);
+  background-color: rgba(181,140,71,0.06);
+  color: var(--gold);
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+} */
+
+/* Hero image border */
+/* .hero img, .hero-section img, [class*="hero"] img {
+  border-radius: 8px;
+  border: 2px solid rgba(181,140,71,0.48);
+  box-shadow: 0 8px 32px rgba(181,140,71,0.08);
+  background-color: rgba(0,0,0,0.12);
+} */
+
+/* ---------- Dining / table detector ---------- */
+/* [role="status"], .table-panel, .table-card, [class*="table-detector"], [class*="qr-table-detector"], [class*="youre-dining"], [class*="dining-on"] {
+  border-radius: 12px;
+  padding: 16px;
+  background-color: rgba(11,6,5,0.92);
+  border: 1px solid var(--gold);
+  color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+} */
+
+/* small text within dining box */
+/* [role="status"] p, [role="status"] .muted {
+  color: var(--muted);
+} */
+
+/* ---------- Buttons / CTAs / Pills (gold) ---------- */
+/* Generic gold CTA (you can still add className="gold-btn" to any button) */
+/* .gold-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 0.45rem 1rem;
+  background-color: var(--gold);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 8px 28px rgba(181,140,71,0.18);
+  transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease;
+}
+.gold-btn:hover {
+  background-color: var(--gold-600);
+  transform: translateY(-2px);
+} */
+
+/* Fallback targets for existing markup (highly specific enough)
+button, .btn, [class*="btn-"], [class*="Add"], [class*="add-btn"], [class*="add"], [class*="my-order"], .menu-filter, [class*="filter"], [class*="category"], [class*="tab"], [class*="pill"], [class*="chip"] {
+  background-color: var(--gold);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 9999px;
+  box-shadow: 0 8px 28px rgba(181,140,71,0.18);
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+} */
+
+/* ensure children inside buttons use white */
+/* button * , [class*="filter"] *, [class*="category"] * {
+  color: #fff !important;
+  fill: #fff !important;
+} */
+
+/* Category pills */
+/* [class*="filter"], [class*="category"], [class*="tab"], .menu-filter {
+  border-radius: 9999px;
+  padding: 0.35rem 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+} */
+
+/* ---------- Panels / cards ---------- */
+/* .panel, .card, .orders-dashboard, .order-card, .menu-section, .menu-card, .bg-white, .bg-gray-50, .bg-white\/90 {
+  background-color: rgba(11,6,5,0.88);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.55);
+} */
+
+/* Inputs */
+/* input, textarea, select, .form-control, .border {
+  background-color: rgba(0,0,0,0.45);
+  color: var(--text);
+  border: 1px solid rgba(181,140,71,0.12);
+} */
+
+/* ---------- Checkout / totals ---------- */
+/* Text for item name, qty, and back button */
+/* .checkout .item-name,
+.checkout .item-qty,
+.checkout .btn-back,
+.checkout button,
+.checkout .btn {
+  color: #ffffff;
+} */
+
+/* Table stroke inside checkout header */
+/* .checkout [role="status"], .checkout .table-panel {
+  border: 1px solid var(--gold);
+  background-color: rgba(11,6,5,0.94);
+} */
+
+/* Items list simplified (no extra inner filled boxes) */
+/* .checkout .items-list .item,
+.checkout .items-list .item-row,
+.checkout .items-list .order-item {
+  background: transparent;
+  border: 1px solid rgba(181,140,71,0.18);
+  border-radius: 12px;
+  padding: 12px;
+} */
+
+/* Totals box */
+/* .checkout .totals {
+  border: 1px solid rgba(181,140,71,0.18);
+  border-radius: 12px;
+  padding: 12px;
+  background: transparent;
+} */
+
+/* Status message box (no inner gradient) */
+/* .checkout .status {
+  border: 1px solid rgba(181,140,71,0.18);
+  border-radius: 12px;
+  padding: 12px;
+  background: transparent;
+  color: #fff;
+} */
+
+/* ---------- Defensive tiny overrides (rare cases) ---------- */
+/* Target My Order / checkout anchors and specific IDs if used */
+/* [data-testid*="my-order"], [id*="my-order"], a[href*="checkout"], button[class*="order"], button[class*="my-order"] {
+  background-color: var(--gold) !important;
+  color: #fff !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 8px 28px rgba(181,140,71,0.22) !important;
+} */
+
+/* If some elements still use bg-indigo/bg-gray utilities, recolor only buttons */
+/* button[class*="bg-indigo"], button[class*="bg-gray"], [class*="bg-indigo-"], [class*="bg-gray-"] {
+  background-color: var(--gold) !important;
+  color: #fff !important;
+} */
+
+/* ---------- Scrollbar ----------
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(181,140,71,0.6), rgba(181,140,71,0.25));
+  border-radius: 12px;
+} */
